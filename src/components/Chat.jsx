@@ -1,4 +1,4 @@
-import { createSignal, For, Show, onMount } from 'solid-js';
+import { createSignal, For, Show, onMount, createEffect } from 'solid-js';
 import modelManager from '../lib/model';
 
 export default function Chat() {
@@ -16,9 +16,19 @@ export default function Chat() {
     progress: 0,
     device: null,
   });
+  const [loadingAttempted, setLoadingAttempted] = createSignal(false);
 
   let messagesEndRef;
-  let isLoadingStarted = false; // Track if loading has been initiated
+
+  // Debug: Log when modelState changes
+  createEffect(() => {
+    console.log('[Chat] modelState changed:', modelState());
+  });
+
+  // Debug: Log when loadProgress changes
+  createEffect(() => {
+    console.log('[Chat] loadProgress changed:', loadProgress());
+  });
 
   // Scroll to bottom of messages
   const scrollToBottom = () => {
@@ -27,30 +37,41 @@ export default function Chat() {
 
   // Load model on mount
   onMount(async () => {
-    // Prevent multiple loading attempts
-    if (isLoadingStarted) {
-      console.log('Loading already started, skipping...');
+    console.log('[Chat] onMount called, loadingAttempted:', loadingAttempted());
+
+    // Prevent multiple loading attempts using signal
+    if (loadingAttempted()) {
+      console.log('[Chat] Loading already attempted, skipping...');
       return;
     }
-    isLoadingStarted = true;
+
+    setLoadingAttempted(true);
+    console.log('[Chat] Starting model load...');
 
     // Set initial loading state
     setModelState({ loading: true, loaded: false, error: null, progress: 0 });
 
     // Set up progress callback - only update progress, not full state
     modelManager.setProgressCallback((progress) => {
+      console.log('[Chat] Progress callback:', progress);
       setLoadProgress(progress);
     });
 
     // Load the model
     try {
+      console.log('[Chat] Calling modelManager.loadModel()...');
       await modelManager.loadModel();
+      console.log('[Chat] Model loaded successfully!');
+
       // Update the final state after loading completes
-      setModelState(modelManager.getState());
+      const finalState = modelManager.getState();
+      console.log('[Chat] Final state:', finalState);
+      setModelState(finalState);
     } catch (error) {
-      console.error('Failed to load model:', error);
-      setModelState(modelManager.getState());
-      isLoadingStarted = false; // Reset on error to allow retry
+      console.error('[Chat] Failed to load model:', error);
+      const errorState = modelManager.getState();
+      console.log('[Chat] Error state:', errorState);
+      setModelState(errorState);
     }
   });
 
