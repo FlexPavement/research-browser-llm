@@ -3,6 +3,7 @@ import solid from 'vite-plugin-solid';
 
 export default defineConfig({
   plugins: [solid()],
+  base: '/research-browser-llm/',
   server: {
     port: 3000,
     headers: {
