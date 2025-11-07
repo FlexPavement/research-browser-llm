@@ -87,13 +87,24 @@ export default function Chat() {
       setTimeout(scrollToBottom, 100);
     } catch (error) {
       console.error('Error generating response:', error);
+
+      // Create a user-friendly error message
+      const errorContent = error.message || 'An unexpected error occurred while generating the response.';
+
       setMessages((prev) =>
         prev.map((msg, idx) =>
           idx === assistantIndex
-            ? { role: 'assistant', content: `Error: ${error.message}`, loading: false, error: true }
+            ? {
+                role: 'assistant',
+                content: `⚠️ ${errorContent}\n\nPlease try:\n• Rephrasing your question\n• Using a shorter prompt\n• Refreshing the page if errors persist`,
+                loading: false,
+                error: true,
+              }
             : msg
         )
       );
+
+      setTimeout(scrollToBottom, 100);
     } finally {
       setIsGenerating(false);
     }
@@ -160,11 +171,28 @@ export default function Chat() {
       {/* Error state */}
       <Show when={modelState().error}>
         <div class="error-container">
-          <h2>Error Loading Model</h2>
-          <p>{modelState().error}</p>
-          <button class="btn btn-primary" onClick={() => window.location.reload()}>
-            Retry
-          </button>
+          <div class="error-icon">⚠️</div>
+          <h2>Failed to Load Model</h2>
+          <div class="error-message">
+            <p class="error-primary">{modelState().error}</p>
+            <Show when={loadProgress().error && loadProgress().error !== modelState().error}>
+              <p class="error-details">{loadProgress().error}</p>
+            </Show>
+          </div>
+          <div class="error-actions">
+            <button class="btn btn-primary" onClick={() => window.location.reload()}>
+              Retry Loading Model
+            </button>
+          </div>
+          <div class="error-help">
+            <p class="error-help-title">Troubleshooting:</p>
+            <ul class="error-help-list">
+              <li>Check your internet connection</li>
+              <li>Try using a different browser (Chrome or Edge recommended)</li>
+              <li>Clear your browser cache and reload</li>
+              <li>Ensure you have at least 2GB of free RAM</li>
+            </ul>
+          </div>
         </div>
       </Show>
 

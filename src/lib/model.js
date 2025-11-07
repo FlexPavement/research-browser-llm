@@ -103,15 +103,35 @@ class ModelManager {
       }
     } catch (error) {
       console.error('Error loading model:', error);
-      this.error = error.message;
+
+      // Create a detailed error message
+      let errorMessage = 'Failed to load model';
+
+      if (error.message.includes('fetch')) {
+        errorMessage = 'Network error: Unable to download model files. Please check your internet connection.';
+      } else if (error.message.includes('CORS')) {
+        errorMessage = 'CORS error: Unable to access model files. This may be a browser security restriction.';
+      } else if (error.message.includes('memory') || error.message.includes('allocation')) {
+        errorMessage = 'Memory error: Not enough memory to load the model. Try closing other tabs.';
+      } else if (error.message.includes('WebAssembly')) {
+        errorMessage = 'WebAssembly error: Your browser may not support the required features.';
+      } else if (error.message) {
+        errorMessage = `Error: ${error.message}`;
+      }
+
+      this.error = errorMessage;
       this.loading = false;
       this.loaded = false;
 
       if (this.progressCallback) {
-        this.progressCallback({ status: 'error', error: error.message });
+        this.progressCallback({
+          status: 'error',
+          error: errorMessage,
+          details: error.stack
+        });
       }
 
-      throw error;
+      throw new Error(errorMessage);
     }
   }
 
@@ -148,7 +168,19 @@ class ModelManager {
       return generated.trim();
     } catch (error) {
       console.error('Error generating text:', error);
-      throw error;
+
+      // Create user-friendly error message
+      let errorMessage = 'Failed to generate response';
+
+      if (error.message.includes('memory') || error.message.includes('allocation')) {
+        errorMessage = 'Memory error during generation. Try a shorter prompt or refresh the page.';
+      } else if (error.message.includes('timeout')) {
+        errorMessage = 'Generation timed out. Please try again with a shorter prompt.';
+      } else if (error.message) {
+        errorMessage = `Generation error: ${error.message}`;
+      }
+
+      throw new Error(errorMessage);
     }
   }
 
