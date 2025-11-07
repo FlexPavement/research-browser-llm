@@ -46,6 +46,7 @@ class ModelManager {
    */
   async loadModel() {
     if (this.loaded || this.loading) {
+      console.log('Model already loaded or loading, skipping...');
       return;
     }
 
@@ -56,7 +57,9 @@ class ModelManager {
     try {
       // Check WebGPU support
       const hasWebGPU = await this.checkWebGPUSupport();
-      const device = hasWebGPU ? 'webgpu' : 'wasm';
+
+      // Start with WASM for better stability, WebGPU can be enabled later
+      const device = 'wasm';
 
       console.log(`Loading model with ${device.toUpperCase()} backend...`);
 
@@ -67,7 +70,7 @@ class ModelManager {
       // Load the text generation pipeline
       this.generator = await pipeline('text-generation', MODEL_NAME, {
         device,
-        dtype: hasWebGPU ? 'fp32' : 'q8', // Use quantization for WASM
+        dtype: 'q8', // Use quantization for better performance and smaller size
         progress_callback: (progress) => {
           if (progress.status === 'progress') {
             const percent = Math.round((progress.loaded / progress.total) * 100);

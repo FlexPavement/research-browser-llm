@@ -26,18 +26,22 @@ export default function Chat() {
 
   // Load model on mount
   onMount(async () => {
-    // Set up progress callback
+    // Set initial loading state
+    setModelState({ loading: true, loaded: false, error: null, progress: 0 });
+
+    // Set up progress callback - only update progress, not full state
     modelManager.setProgressCallback((progress) => {
       setLoadProgress(progress);
-      setModelState(modelManager.getState());
     });
 
     // Load the model
     try {
       await modelManager.loadModel();
+      // Update the final state after loading completes
       setModelState(modelManager.getState());
     } catch (error) {
       console.error('Failed to load model:', error);
+      setModelState(modelManager.getState());
     }
   });
 
