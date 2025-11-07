@@ -124,9 +124,14 @@ export default function Chat() {
     setElapsedTime(0);
     setGenerationStatus('Generating response...');
 
-    // Add placeholder for assistant message
-    const assistantIndex = messages().length + 1;
-    setMessages((prev) => [...prev, { role: 'assistant', content: '', loading: true }]);
+    // Add placeholder for assistant message and get its index
+    let assistantIndex;
+    setMessages((prev) => {
+      assistantIndex = prev.length; // Get index before adding
+      return [...prev, { role: 'assistant', content: '', loading: true }];
+    });
+
+    console.log('[Chat] Assistant message index:', assistantIndex);
 
     setTimeout(scrollToBottom, 100);
 
@@ -141,17 +146,23 @@ export default function Chat() {
       });
 
       console.log('[Chat] Text generation completed, response length:', response.length);
+      console.log('[Chat] Updating message at index:', assistantIndex);
 
       // Update assistant message
-      setMessages((prev) =>
-        prev.map((msg, idx) =>
-          idx === assistantIndex ? { role: 'assistant', content: response, loading: false } : msg
-        )
-      );
+      setMessages((prev) => {
+        console.log('[Chat] Current messages length:', prev.length);
+        return prev.map((msg, idx) => {
+          if (idx === assistantIndex) {
+            console.log('[Chat] Updating message at index', idx, 'with response');
+            return { role: 'assistant', content: response, loading: false };
+          }
+          return msg;
+        });
+      });
 
       setTimeout(scrollToBottom, 100);
     } catch (error) {
-      console.error('Error generating response:', error);
+      console.error('[Chat] Error generating response:', error);
 
       // Create a user-friendly error message
       const errorContent = error.message || 'An unexpected error occurred while generating the response.';
