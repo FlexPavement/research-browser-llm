@@ -149,7 +149,7 @@ export default function Chat() {
         <div class="loading-container">
           <div class="loading-content">
             <div class="spinner"></div>
-            <h2>Loading LaMini-Flan-T5 Model</h2>
+            <h2>Loading Gemma 3 270M Model</h2>
             <p class="loading-status">
               {loadProgress().status === 'downloading' && 'Downloading model files...'}
               {loadProgress().status === 'loading' && 'Initializing model...'}
@@ -202,7 +202,7 @@ export default function Chat() {
           <Show when={messages().length === 0}>
             <div class="welcome-message">
               <h2>Welcome to Browser LLM Chat!</h2>
-              <p>This chat application runs entirely in your browser using the LaMini-Flan-T5 model.</p>
+              <p>This chat application runs entirely in your browser using the Gemma 3 270M model.</p>
               <div class="features">
                 <div class="feature">
                   <span class="feature-icon">🔒</span>
@@ -226,7 +226,7 @@ export default function Chat() {
               <div class={`message message-${message.role}`}>
                 <div class="message-avatar">{message.role === 'user' ? '👤' : '🤖'}</div>
                 <div class="message-content">
-                  <div class="message-role">{message.role === 'user' ? 'You' : 'Assistant'}</div>
+                  <div class="message-role">{message.role === 'user' ? 'You' : 'Gemma'}</div>
                   <Show when={message.loading}>
                     <div class="typing-indicator">
                       <span></span>

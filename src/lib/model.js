@@ -6,8 +6,8 @@ env.allowLocalModels = false;
 env.useBrowserCache = true;
 
 // Model configuration
-// Using Xenova/LaMini-Flan-T5-783M - a smaller, browser-tested model
-const MODEL_NAME = 'Xenova/LaMini-Flan-T5-783M';
+// Using Gemma 3 270M - testing for error diagnosis
+const MODEL_NAME = 'onnx-community/gemma-3-270m-it-ONNX';
 const DEVICE = 'wasm'; // Use WASM for better stability
 
 class ModelManager {
@@ -69,7 +69,7 @@ class ModelManager {
       }
 
       // Load the text generation pipeline
-      this.generator = await pipeline('text2text-generation', MODEL_NAME, {
+      this.generator = await pipeline('text-generation', MODEL_NAME, {
         device,
         dtype: 'fp32',
         progress_callback: (progress) => {
@@ -152,18 +152,26 @@ class ModelManager {
     } = options;
 
     try {
-      // T5 models work with direct prompts
-      const result = await this.generator(prompt, {
+      // Format the prompt for Gemma instruction-tuned model
+      const formattedPrompt = `<start_of_turn>user\n${prompt}<end_of_turn>\n<start_of_turn>model\n`;
+
+      const result = await this.generator(formattedPrompt, {
         max_new_tokens: maxTokens,
         temperature,
         top_p: topP,
         repetition_penalty: repetitionPenalty,
         do_sample: true,
+        return_full_text: false,
         callback_function: callback,
       });
 
       // Extract just the generated text
-      const generated = result[0].generated_text;
+      let generated = result[0].generated_text;
+
+      // Remove the end token if present
+      if (generated.includes('<end_of_turn>')) {
+        generated = generated.split('<end_of_turn>')[0];
+      }
 
       return generated.trim();
     } catch (error) {
@@ -200,15 +208,18 @@ class ModelManager {
     } = options;
 
     try {
-      // T5 models work with direct prompts
+      // Format the prompt for Gemma instruction-tuned model
+      const formattedPrompt = `<start_of_turn>user\n${prompt}<end_of_turn>\n<start_of_turn>model\n`;
+
       let previousOutput = '';
 
-      const result = await this.generator(prompt, {
+      const result = await this.generator(formattedPrompt, {
         max_new_tokens: maxTokens,
         temperature,
         top_p: topP,
         repetition_penalty: repetitionPenalty,
         do_sample: true,
+        return_full_text: false,
         callback_function: (output) => {
           const newText = output[0].generated_text;
           const delta = newText.slice(previousOutput.length);
@@ -218,7 +229,13 @@ class ModelManager {
       });
 
       // Yield the full result
-      const generated = result[0].generated_text;
+      let generated = result[0].generated_text;
+
+      // Remove the end token if present
+      if (generated.includes('<end_of_turn>')) {
+        generated = generated.split('<end_of_turn>')[0];
+      }
+
       yield generated.trim();
     } catch (error) {
       console.error('Error generating text:', error);
