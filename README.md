@@ -2,6 +2,12 @@
 
 A web application that runs Large Language Models (LLMs) locally in the browser using the Gemma model family. Built with SolidJS and Transformers.js, this application provides private, offline AI chat capabilities without requiring a server or GPU.
 
+## 🚀 Live Demo
+
+**Try it now:** [https://flexpavement.github.io/research-browser-llm/](https://flexpavement.github.io/research-browser-llm/)
+
+The application runs entirely in your browser - no server required! On first load, it will download the Gemma 3 270M model (~600-800MB) which will be cached for future use.
+
 ## Table of Contents
 
 - [Research Overview](#research-overview)
@@ -180,6 +186,23 @@ npm run build
 # or
 bun run build
 ```
+
+### Deployment
+
+The project includes a GitHub Actions workflow that automatically deploys to GitHub Pages when changes are pushed to the main branch. The built application is available at:
+
+**Live URL:** [https://flexpavement.github.io/research-browser-llm/](https://flexpavement.github.io/research-browser-llm/)
+
+To enable GitHub Pages for your fork:
+1. Go to repository Settings > Pages
+2. Set Source to "GitHub Actions"
+3. Push changes to trigger the deployment workflow
+
+The deployment process:
+- Automatically builds the application
+- Optimizes assets for production
+- Deploys to GitHub Pages
+- Includes `.nojekyll` file to prevent Jekyll processing
 
 ## Browser Compatibility
 
