@@ -70,7 +70,7 @@ class ModelManager {
       // Load the text generation pipeline
       this.generator = await pipeline('text-generation', MODEL_NAME, {
         device,
-        dtype: 'q8', // Use quantization for better performance and smaller size
+        dtype: 'fp32', // Use fp32 as model doesn't have pre-quantized version
         progress_callback: (progress) => {
           if (progress.status === 'progress') {
             const percent = Math.round((progress.loaded / progress.total) * 100);
