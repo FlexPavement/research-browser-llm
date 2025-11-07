@@ -6,8 +6,9 @@ env.allowLocalModels = false;
 env.useBrowserCache = true;
 
 // Model configuration
-const MODEL_NAME = 'onnx-community/gemma-3-270m-it-ONNX';
-const DEVICE = 'webgpu'; // Will fallback to 'wasm' if WebGPU is not available
+// Using Xenova/LaMini-Flan-T5-783M - a smaller, browser-tested model
+const MODEL_NAME = 'Xenova/LaMini-Flan-T5-783M';
+const DEVICE = 'wasm'; // Use WASM for better stability
 
 class ModelManager {
   constructor() {
@@ -68,9 +69,9 @@ class ModelManager {
       }
 
       // Load the text generation pipeline
-      this.generator = await pipeline('text-generation', MODEL_NAME, {
+      this.generator = await pipeline('text2text-generation', MODEL_NAME, {
         device,
-        dtype: 'fp32', // Use fp32 as model doesn't have pre-quantized version
+        dtype: 'fp32',
         progress_callback: (progress) => {
           if (progress.status === 'progress') {
             const percent = Math.round((progress.loaded / progress.total) * 100);
@@ -131,26 +132,18 @@ class ModelManager {
     } = options;
 
     try {
-      // Format the prompt for instruction-tuned model
-      const formattedPrompt = `<start_of_turn>user\n${prompt}<end_of_turn>\n<start_of_turn>model\n`;
-
-      const result = await this.generator(formattedPrompt, {
+      // T5 models work with direct prompts
+      const result = await this.generator(prompt, {
         max_new_tokens: maxTokens,
         temperature,
         top_p: topP,
         repetition_penalty: repetitionPenalty,
         do_sample: true,
-        return_full_text: false,
         callback_function: callback,
       });
 
       // Extract just the generated text
-      let generated = result[0].generated_text;
-
-      // Remove the end token if present
-      if (generated.includes('<end_of_turn>')) {
-        generated = generated.split('<end_of_turn>')[0];
-      }
+      const generated = result[0].generated_text;
 
       return generated.trim();
     } catch (error) {
@@ -175,18 +168,15 @@ class ModelManager {
     } = options;
 
     try {
-      // Format the prompt for instruction-tuned model
-      const formattedPrompt = `<start_of_turn>user\n${prompt}<end_of_turn>\n<start_of_turn>model\n`;
-
+      // T5 models work with direct prompts
       let previousOutput = '';
 
-      const result = await this.generator(formattedPrompt, {
+      const result = await this.generator(prompt, {
         max_new_tokens: maxTokens,
         temperature,
         top_p: topP,
         repetition_penalty: repetitionPenalty,
         do_sample: true,
-        return_full_text: false,
         callback_function: (output) => {
           const newText = output[0].generated_text;
           const delta = newText.slice(previousOutput.length);
@@ -196,13 +186,7 @@ class ModelManager {
       });
 
       // Yield the full result
-      let generated = result[0].generated_text;
-
-      // Remove the end token if present
-      if (generated.includes('<end_of_turn>')) {
-        generated = generated.split('<end_of_turn>')[0];
-      }
-
+      const generated = result[0].generated_text;
       yield generated.trim();
     } catch (error) {
       console.error('Error generating text:', error);

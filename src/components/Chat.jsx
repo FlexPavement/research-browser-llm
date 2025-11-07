@@ -18,6 +18,7 @@ export default function Chat() {
   });
 
   let messagesEndRef;
+  let isLoadingStarted = false; // Track if loading has been initiated
 
   // Scroll to bottom of messages
   const scrollToBottom = () => {
@@ -26,6 +27,13 @@ export default function Chat() {
 
   // Load model on mount
   onMount(async () => {
+    // Prevent multiple loading attempts
+    if (isLoadingStarted) {
+      console.log('Loading already started, skipping...');
+      return;
+    }
+    isLoadingStarted = true;
+
     // Set initial loading state
     setModelState({ loading: true, loaded: false, error: null, progress: 0 });
 
@@ -42,6 +50,7 @@ export default function Chat() {
     } catch (error) {
       console.error('Failed to load model:', error);
       setModelState(modelManager.getState());
+      isLoadingStarted = false; // Reset on error to allow retry
     }
   });
 
@@ -129,7 +138,7 @@ export default function Chat() {
         <div class="loading-container">
           <div class="loading-content">
             <div class="spinner"></div>
-            <h2>Loading Gemma 3 270M Model</h2>
+            <h2>Loading LaMini-Flan-T5 Model</h2>
             <p class="loading-status">
               {loadProgress().status === 'downloading' && 'Downloading model files...'}
               {loadProgress().status === 'loading' && 'Initializing model...'}
@@ -165,7 +174,7 @@ export default function Chat() {
           <Show when={messages().length === 0}>
             <div class="welcome-message">
               <h2>Welcome to Browser LLM Chat!</h2>
-              <p>This chat application runs entirely in your browser using the Gemma 3 270M model.</p>
+              <p>This chat application runs entirely in your browser using the LaMini-Flan-T5 model.</p>
               <div class="features">
                 <div class="feature">
                   <span class="feature-icon">🔒</span>
@@ -189,7 +198,7 @@ export default function Chat() {
               <div class={`message message-${message.role}`}>
                 <div class="message-avatar">{message.role === 'user' ? '👤' : '🤖'}</div>
                 <div class="message-content">
-                  <div class="message-role">{message.role === 'user' ? 'You' : 'Gemma'}</div>
+                  <div class="message-role">{message.role === 'user' ? 'You' : 'Assistant'}</div>
                   <Show when={message.loading}>
                     <div class="typing-indicator">
                       <span></span>
