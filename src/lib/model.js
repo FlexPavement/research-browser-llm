@@ -59,9 +59,10 @@ class ModelManager {
       // Check WebGPU support
       const hasWebGPU = await this.checkWebGPUSupport();
 
-      // Start with WASM for better stability, WebGPU can be enabled later
-      const device = 'wasm';
+      // Use WebGPU if available, otherwise fallback to WASM
+      const device = hasWebGPU ? 'webgpu' : 'wasm';
 
+      console.log(`[ModelManager] WebGPU supported: ${hasWebGPU}`);
       console.log(`[ModelManager] Loading model with ${device.toUpperCase()} backend...`);
       console.log('[ModelManager] Model name:', MODEL_NAME);
 
