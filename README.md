@@ -1,12 +1,12 @@
 # Browser-Based LLM Chat Application
 
-A web application that runs Large Language Models (LLMs) locally in the browser using the Gemma model family. Built with SolidJS and Transformers.js, this application provides private, offline AI chat capabilities without requiring a server or GPU.
+A web application that runs Large Language Models (LLMs) locally in the browser. Built with SolidJS and Transformers.js, this application provides private, offline AI chat capabilities without requiring a server or GPU.
 
 ## 🚀 Live Demo
 
 **Try it now:** [https://flexpavement.github.io/research-browser-llm/](https://flexpavement.github.io/research-browser-llm/)
 
-The application runs entirely in your browser - no server required! On first load, it will download the Gemma 3 270M model (~600-800MB) which will be cached for future use.
+The application runs entirely in your browser - no server required! On first load, it will download the LaMini-Flan-T5-783M model (~1.5GB) which will be cached for future use.
 
 ## Table of Contents
 
@@ -26,7 +26,7 @@ This project explores different approaches to embedding LLM models locally in br
 ## Chosen Solution
 
 **Framework:** Transformers.js (by Hugging Face)
-**Model:** Gemma 3 270M Instruct (`onnx-community/gemma-3-270m-it-ONNX`)
+**Model:** LaMini-Flan-T5-783M (`Xenova/LaMini-Flan-T5-783M`)
 **Web Framework:** SolidJS
 
 ### Why Transformers.js?
@@ -42,16 +42,16 @@ After evaluating multiple options, Transformers.js was selected for the followin
 5. **Active Development**: Regular updates and new model support
 6. **Privacy-First**: All inference happens locally in the browser
 
-### Why Gemma 3 270M?
+### Why LaMini-Flan-T5-783M?
 
-The Gemma 3 270M Instruct model is ideal for browser deployment:
+The LaMini-Flan-T5-783M model is ideal for browser deployment:
 
-1. **Compact Size**: Only 270 million parameters (170M embedding + 100M transformer blocks)
-2. **On-Device Optimized**: Designed specifically for edge and browser deployment
-3. **Good Performance**: Strong instruction-following and text structuring capabilities
-4. **Browser-Ready**: Available in ONNX format optimized for web use
-5. **Low Resource Requirements**: Works on devices with or without GPU
-6. **Large Vocabulary**: 256k token vocabulary for better language coverage
+1. **Proven Stability**: Well-tested T5 architecture with excellent browser compatibility
+2. **Good Performance**: 783M parameters provide quality text generation
+3. **Instruction-Tuned**: Fine-tuned for following instructions and answering questions
+4. **Browser-Ready**: Available in ONNX format (Xenova) optimized for web use
+5. **Reliable Loading**: Works consistently with WASM backend without reload issues
+6. **Wide Compatibility**: Runs on all modern browsers without GPU requirements
 
 ## Available Options
 
