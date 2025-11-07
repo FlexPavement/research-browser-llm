@@ -5,6 +5,9 @@ export default function Chat() {
   const [messages, setMessages] = createSignal([]);
   const [input, setInput] = createSignal('');
   const [isGenerating, setIsGenerating] = createSignal(false);
+  const [generationStartTime, setGenerationStartTime] = createSignal(null);
+  const [elapsedTime, setElapsedTime] = createSignal(0);
+  const [generationStatus, setGenerationStatus] = createSignal('');
   const [modelState, setModelState] = createSignal({
     loading: false,
     loaded: false,
@@ -19,6 +22,38 @@ export default function Chat() {
   const [loadingAttempted, setLoadingAttempted] = createSignal(false);
 
   let messagesEndRef;
+  let timerInterval = null;
+
+  // Update elapsed time during generation
+  createEffect(() => {
+    if (isGenerating() && generationStartTime()) {
+      // Clear any existing interval
+      if (timerInterval) clearInterval(timerInterval);
+
+      // Update elapsed time every 100ms
+      timerInterval = setInterval(() => {
+        const elapsed = (Date.now() - generationStartTime()) / 1000;
+        setElapsedTime(elapsed);
+
+        // Update status messages based on elapsed time
+        if (elapsed < 3) {
+          setGenerationStatus('Generating response...');
+        } else if (elapsed < 10) {
+          setGenerationStatus('Processing... this may take a moment');
+        } else if (elapsed < 30) {
+          setGenerationStatus('This is taking longer than usual...');
+        } else {
+          setGenerationStatus('Still working... the model may be slow or stuck');
+        }
+      }, 100);
+    } else {
+      // Clear interval when not generating
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+  });
 
   // Debug: Log when modelState changes
   createEffect(() => {
@@ -82,7 +117,12 @@ export default function Chat() {
     // Add user message
     setMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
     setInput('');
+
+    // Start generation tracking
     setIsGenerating(true);
+    setGenerationStartTime(Date.now());
+    setElapsedTime(0);
+    setGenerationStatus('Generating response...');
 
     // Add placeholder for assistant message
     const assistantIndex = messages().length + 1;
@@ -91,12 +131,16 @@ export default function Chat() {
     setTimeout(scrollToBottom, 100);
 
     try {
+      console.log('[Chat] Starting text generation...');
+
       // Generate response
       const response = await modelManager.generate(userMessage, {
         maxTokens: 256,
         temperature: 0.7,
         topP: 0.9,
       });
+
+      console.log('[Chat] Text generation completed, response length:', response.length);
 
       // Update assistant message
       setMessages((prev) =>
@@ -127,7 +171,11 @@ export default function Chat() {
 
       setTimeout(scrollToBottom, 100);
     } finally {
+      // Clear generation tracking
       setIsGenerating(false);
+      setGenerationStartTime(null);
+      setElapsedTime(0);
+      setGenerationStatus('');
     }
   };
 
@@ -249,10 +297,21 @@ export default function Chat() {
                 <div class="message-content">
                   <div class="message-role">{message.role === 'user' ? 'You' : 'Gemma'}</div>
                   <Show when={message.loading}>
-                    <div class="typing-indicator">
-                      <span></span>
-                      <span></span>
-                      <span></span>
+                    <div class="generation-status">
+                      <div class="typing-indicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                      <div class="generation-info">
+                        <div class="generation-status-text">{generationStatus()}</div>
+                        <div class="generation-timer">
+                          Elapsed: {elapsedTime().toFixed(1)}s
+                          <Show when={elapsedTime() > 30}>
+                            <span class="warning-text"> - Consider refreshing if stuck</span>
+                          </Show>
+                        </div>
+                      </div>
                     </div>
                   </Show>
                   <Show when={!message.loading}>

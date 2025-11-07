@@ -272,6 +272,36 @@ body {
   }
 }
 
+/* Generation Status */
+.generation-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.generation-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.generation-status-text {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-style: italic;
+}
+
+.generation-timer {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-family: monospace;
+}
+
+.warning-text {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
 /* Input Container */
 .input-container {
   padding: 1.5rem;
